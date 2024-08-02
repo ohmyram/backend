@@ -30,24 +30,49 @@ const findById = async (userId) => {
   return resultado;
 };
 
-export const updateProfile = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { name, photo, biografia, phone, email, password } = req.body;
-    console.log('UpdateProfile function called with userId:', userId); // Log userId
-    console.log('UpdateProfile function called with data:', { name, photo, biografia, phone, email, password }); // Log data
+const updateProfile = async (userId, { photo, name, biografia, phone, email, password }) => {
+  console.log('Updating user profile:', { userId, photo, name, biografia, phone, email, password });
+  const fields = [];
+  const values = [];
 
-    if (!userId) {
-      return res.status(400).json({ message: 'User ID is missing or invalid' });
-    }
-
-    const result = await db.updateProfile(userId, name, photo, biografia, phone, email, password);
-    console.log('Profile updated:', result); // Log result
-    res.json({ message: 'Profile updated successfully', result });
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    res.status(500).json({ message: 'Error updating profile', error: error.message });
+  if (photo) {
+    fields.push('photo = ?');
+    values.push(photo);
   }
+  if (name) {
+    fields.push('name = ?');
+    values.push(name);
+  }
+  if (biografia) {
+    fields.push('biografia = ?');
+    values.push(biografia);
+  }
+  if (phone) {
+    fields.push('phone = ?');
+    values.push(phone);
+  }
+  if (email) {
+    fields.push('email = ?');
+    values.push(email);
+  }
+  if (password) {
+    const hash = await bcrypt.hash(password, 10);
+    fields.push('password = ?');
+    values.push(hash);
+  }
+
+  if (fields.length === 0) {
+    throw new Error('No fields to update');
+  }
+
+  values.push(userId);
+
+  const [resultado] = await pool.execute(
+    `UPDATE users SET ${fields.join(', ')} WHERE id = ?`,
+    values
+  );
+  console.log('User profile updated:', resultado);
+  return resultado;
 };
 
 export default { create, where, findById, updateProfile };

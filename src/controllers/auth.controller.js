@@ -66,11 +66,11 @@ export const me = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   const userId = req.user.id;
-  const { nombres, apellidos, telefono, username } = req.body;
-  console.log('UpdateProfile function called', { userId, nombres, apellidos, telefono, username });
+  const { photo, name, biografia, phone, email, password } = req.body;
+  console.log('UpdateProfile function', { userId, photo, name, biografia, phone, email, password });
 
   try {
-    const result = await db.updateProfile(userId, nombres, apellidos, telefono, username);
+    const result = await db.updateProfile(userId, { photo, name, biografia, phone, email, password });
     console.log('Profile updated:', result);
     res.json({ message: 'Profile updated successfully', result });
   } catch (error) {
